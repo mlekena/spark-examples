@@ -39,7 +39,7 @@ if __name__ == "__main__":
     counts = lines.flatMap(lambda x: x.split(' ')) \
                   .map(lambda x: (x, 1)) \
                   .reduceByKey(add)
-    counts.saveAsTextFile("hdfs://node-0:9000/wordcount/output")
+    counts.saveAsTextFile("hdfs://10.128.0.5:9000/wordcount/output")
     output = counts.collect()
     for (word, count) in output:
         print("%s: %i" % (word, count))
