@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser
 parser.add_argument(
     "--data_file", help="Data file to read in must be specified using --data_file")
 parser.add_argument(
-    "--data_output", help="Data output path must be specified using --data_output")
+    "--data_output", help="Data output path must be specified using --data_output", action="")
 
 #  SHOT_DIST, CLOSEST_DEF_DIST, SHOT_CLOCK
 init_k_zones = [
@@ -32,7 +32,10 @@ def main():
 
     # remove comma between quotes for string type csv fields making it hard to parse.
     lines = spark.read.option("header", True).csv(args.file)\
-        .select(*columns_of_interest).rdd.map
+        .select(*columns_of_interest).rdd.map(lambda r: r[0])
+    output = lines.collect()
+    for w in output[0, 10]:
+        print(w)
 
 
 if __name__ == "__main__":
