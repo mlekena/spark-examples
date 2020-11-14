@@ -5,7 +5,7 @@ import argparse
 from operator import add
 
 from pyspark.sql import SparkSession
-
+from pyspark.sql import IntegerType, StringType, StructType
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -22,11 +22,29 @@ init_k_zones = [
     [22, 6, 10],
     [30, 3, 5]
 ]
-COLUMNS=['GAME_ID','MATCHUP','LOCATION','W',
-'FINAL_MARGIN','SHOT_NUMBER','PERIOD','GAME_CLOCK',
-'SHOT_CLOCK','DRIBBLES','TOUCH_TIME','SHOT_DIST',
-'PTS_TYPE','SHOT_RESULT','CLOSEST_DEFENDER',
-'CLOSEST_DEFENDER_PLAYER_ID','CLOSE_DEF_DIST','FGM','PTS','player_name','player_id']
+schema = StructType()\
+    .add('GAME_ID', IntegerType(), True) \
+    .add('MATCHUP', StringType(), True) \
+    .add('LOCATION', StringType(), True) \
+    .add('W', StringType, True) \
+    .add('FINAL_MARGIN', IntegerType, True) \
+    .add('SHOT_NUMBER', StringType(), True) \
+    .add('PERIOD', StringType(), True) \
+    .add('GAME_CLOCK', StringType(), True) \
+    .add('SHOT_CLOCK', IntegerType(), True) \
+    .add('DRIBBLES', StringType(), True) \
+    .add('TOUCH_TIME', StringType(), True) \
+    .add('SHOT_DIST', IntegerType(), True) \
+    .add('PTS_TYPE', StringType(), True) \
+    .add('SHOT_RESULT', StringType(), True) \
+    .add('CLOSEST_DEFENDER', StringType(), True) \
+    .add('CLOSEST_DEFENDER_PLAYER_ID', StringType(), True) \
+    .add('CLOSE_DEF_DIST', IntegerType(), True) \
+    .add('FGM', StringType(), True) \
+    .add('PTS', StringType(), True) \
+    .add('player_name', StringType(), True) \
+    .add('player_id', StringType(), True)
+
 
 def main():
     columns_of_interest = ['player_name',
@@ -35,7 +53,7 @@ def main():
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
 
     # remove comma between quotes for string type csv fields making it hard to parse.
-    lines = spark.read.option("header", True).option("schema",COLUMNS).csv(args.data_file)\
+    lines = spark.read.option("header", True).option("schema", schema).csv(args.data_file)\
         .select(*columns_of_interest).rdd.map(lambda r: r[0])
     output = lines.collect()
     for w in output[0, 10]:
