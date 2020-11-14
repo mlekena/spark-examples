@@ -3,7 +3,7 @@ source ../../env.sh
 PROJECTNAME="nba_analysis"
 INPUTPATH="/${PROJECTNAME}/input"
 OUTPUTPATH="/${PROJECTNAME}/output"
-TESTDATA="test_data/data_fraction.csv"
+TESTDATA="data_fraction.csv"
 SRC="./player_zones.py"
 /usr/local/hadoop/bin/hdfs dfs -rm -r $INPUTPATH
 /usr/local/hadoop/bin/hdfs dfs -rm -r $OUTPUTPATH
