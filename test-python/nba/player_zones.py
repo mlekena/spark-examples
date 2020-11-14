@@ -5,7 +5,7 @@ import argparse
 from operator import add
 
 from pyspark.sql import SparkSession
-from pyspark.sql import IntegerType, StringType, StructType
+from pyspark.sql.types import IntegerType, StringType, StructType
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -26,8 +26,8 @@ schema = StructType()\
     .add('GAME_ID', IntegerType(), True) \
     .add('MATCHUP', StringType(), True) \
     .add('LOCATION', StringType(), True) \
-    .add('W', StringType, True) \
-    .add('FINAL_MARGIN', IntegerType, True) \
+    .add('W', StringType(), True) \
+    .add('FINAL_MARGIN', IntegerType(), True) \
     .add('SHOT_NUMBER', StringType(), True) \
     .add('PERIOD', StringType(), True) \
     .add('GAME_CLOCK', StringType(), True) \
@@ -48,15 +48,17 @@ schema = StructType()\
 
 def main():
     columns_of_interest = ['player_name',
-                           'SHOT_DIST', 'CLOSEST_DEF_DIST', 'SHOT_CLOCK']
+                           'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
     args = parser.parse_args()
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
 
     # remove comma between quotes for string type csv fields making it hard to parse.
-    lines = spark.read.option("header", True).option("schema", schema).csv(args.data_file)\
+    lines = spark.read.format("csv") \
+        .option("header", True).schema(schema) \
+        .load(args.data_file)\
         .select(*columns_of_interest).rdd.map(lambda r: r[0])
     output = lines.collect()
-    for w in output[0, 10]:
+    for w in output[0: 10]:
         print(w)
 
 
