@@ -47,21 +47,27 @@ schema = StructType()\
 
 
 def main():
+    print("*"*50)
+    print("*"*50)
+    print("*"*50)
     columns_of_interest = ['player_name',
                            'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
     args = parser.parse_args()
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
-
+    print("using data file {}".format(args.data_file))
     # remove comma between quotes for string type csv fields making it hard to parse.
     # lines = spark.read.format("csv") \
     #     .option("header", True).schema(schema) \
     #     .load(args.data_file)\
     #     .select(*columns_of_interest).rdd.map(lambda r: r[0])
-    lines = spark.csv(args.data_file, header=True,
+    lines = spark.read.csv(args.data_file, header=True,
                       schema=schema).rdd.map(lambda row: row[0])
     output = lines.collect()
-    for w in output[0: 10]:
+    for w in output:
         print(w)
+    
+    print("*"*50)
+    print("*"*50)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 #!/bin/bash
 source ../../env.sh
 PROJECTNAME="nba_analysis"
-INPUTPATH="/${PROJECTNAME}/input"
-OUTPUTPATH="/${PROJECTNAME}/output"
+INPUTPATH="/${PROJECTNAME}/input/"
+OUTPUTPATH="/${PROJECTNAME}/output/"
 TESTDATA="data_fraction.csv"
 SRC="./player_zones.py"
 /usr/local/hadoop/bin/hdfs dfs -rm -r $INPUTPATH
