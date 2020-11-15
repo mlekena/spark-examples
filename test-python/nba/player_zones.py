@@ -46,6 +46,10 @@ schema = StructType()\
     .add('player_id', StringType(), True)
 
 
+def deb_print(outstr):
+    print("{}{}{}".format("#"*20, outstr, "#"*20))
+
+
 def main():
     print("*"*50)
     print("*"*50)
@@ -54,18 +58,21 @@ def main():
                            'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
     args = parser.parse_args()
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
-    print("using data file {}".format(args.data_file))
+    deb_print("using data file {}".format(args.data_file))
     # remove comma between quotes for string type csv fields making it hard to parse.
     # lines = spark.read.format("csv") \
     #     .option("header", True).schema(schema) \
     #     .load(args.data_file)\
     #     .select(*columns_of_interest).rdd.map(lambda r: r[0])
     lines = spark.read.csv(args.data_file, header=True,
-                      schema=schema).rdd.map(lambda row: row[0])
+                           schema=schema).rdd.map(lambda row: row[0])
+    deb_print("csv lines read")
     output = lines.collect()
+    deb_print("lines collected")
+    deb_print("output len: ".format(len(output)))
     for w in output:
         print(w)
-    
+
     print("*"*50)
     print("*"*50)
 
