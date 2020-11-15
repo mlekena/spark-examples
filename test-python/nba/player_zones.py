@@ -4,6 +4,7 @@ import sys
 import argparse
 from operator import add
 
+from pyspark.sql.functions import lit
 from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructType
 reload(sys)
@@ -37,13 +38,13 @@ def main():
     print("*"*50)
     print("*"*50)
     columns_of_interest = ['player_name',
-                           'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK', "KGROUP"]
+                           'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
     args = parser.parse_args()
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
     deb_print("using data file {}".format(args.data_file))
 
     zone_data = spark.read.csv(args.data_file, header=True).select(
-        *columns_of_interest).na.fill(-1)
+        *columns_of_interest).na.fill(15).withColumn("KGROUP", lit(-1))
     zone_data.show(5)
     exp = zone_data.rdd.map(assign_nearest_group)
     # kzones_df = spark.create
