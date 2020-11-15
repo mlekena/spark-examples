@@ -64,10 +64,13 @@ def main():
     #     .option("header", True).schema(schema) \
     #     .load(args.data_file)\
     #     .select(*columns_of_interest).rdd.map(lambda r: r[0])
-    zone_data = spark.read.csv(args.data_file, header=True,
-                               schema=schema).select(columns_of_interest)
-
+    #zone_data = spark.read.csv(args.data_file, header=True,
+    #                           schema=schema)
+    zone_data = spark.read.csv(args.data_file, header=True)
     zone_data.show(10)
+    zone_data.select(*columns_of_interest).show(10)
+
+    #zone_data.show(10)
     deb_print("csv zone_data read")
     output = zone_data.collect()
     deb_print("lines collected")
