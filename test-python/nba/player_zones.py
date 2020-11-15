@@ -64,18 +64,19 @@ def main():
     #     .option("header", True).schema(schema) \
     #     .load(args.data_file)\
     #     .select(*columns_of_interest).rdd.map(lambda r: r[0])
-    lines = spark.read.csv(args.data_file, header=True,
-                           schema=schema)
-    lines.show(10)
-    deb_print("csv lines read")
-    output = lines.collect()
+    zone_data = spark.read.csv(args.data_file, header=True,
+                               schema=schema).select(columns_of_interest)
+
+    zone_data.show(10)
+    deb_print("csv zone_data read")
+    output = zone_data.collect()
     deb_print("lines collected")
-    deb_print("output len: ".format(len(output)))
-    for w in output:
-        print(w)
+    deb_print("output len: {}".format(len(output)))
+    # for w in output[]:
+    #     print(w)
 
     print("*"*50)
-    print("*"*50)
+    deb_print("END PROGRAM")
 
 
 if __name__ == "__main__":
