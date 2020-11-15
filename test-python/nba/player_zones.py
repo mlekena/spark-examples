@@ -22,32 +22,14 @@ init_k_zones = [
     [22, 6, 10],
     [30, 3, 5]
 ]
-schema = StructType()\
-    .add('GAME_ID', IntegerType(), True) \
-    .add('MATCHUP', StringType(), True) \
-    .add('LOCATION', StringType(), True) \
-    .add('W', StringType(), True) \
-    .add('FINAL_MARGIN', IntegerType(), True) \
-    .add('SHOT_NUMBER', StringType(), True) \
-    .add('PERIOD', StringType(), True) \
-    .add('GAME_CLOCK', StringType(), True) \
-    .add('SHOT_CLOCK', IntegerType(), True) \
-    .add('DRIBBLES', StringType(), True) \
-    .add('TOUCH_TIME', StringType(), True) \
-    .add('SHOT_DIST', IntegerType(), True) \
-    .add('PTS_TYPE', StringType(), True) \
-    .add('SHOT_RESULT', StringType(), True) \
-    .add('CLOSEST_DEFENDER', StringType(), True) \
-    .add('CLOSEST_DEFENDER_PLAYER_ID', StringType(), True) \
-    .add('CLOSE_DEF_DIST', IntegerType(), True) \
-    .add('FGM', StringType(), True) \
-    .add('PTS', StringType(), True) \
-    .add('player_name', StringType(), True) \
-    .add('player_id', StringType(), True)
 
 
 def deb_print(outstr):
     print("{}{}{}".format("#"*20, outstr, "#"*20))
+
+
+def assign_nearest_group(in_row):
+    return in_row[0]
 
 
 def main():
@@ -55,28 +37,24 @@ def main():
     print("*"*50)
     print("*"*50)
     columns_of_interest = ['player_name',
-                           'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
+                           'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK', "KGROUP"]
     args = parser.parse_args()
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
     deb_print("using data file {}".format(args.data_file))
-    # remove comma between quotes for string type csv fields making it hard to parse.
-    # lines = spark.read.format("csv") \
-    #     .option("header", True).schema(schema) \
-    #     .load(args.data_file)\
-    #     .select(*columns_of_interest).rdd.map(lambda r: r[0])
-    #zone_data = spark.read.csv(args.data_file, header=True,
-    #                           schema=schema)
-    zone_data = spark.read.csv(args.data_file, header=True)
-    zone_data.show(10)
-    zone_data.select(*columns_of_interest).show(10)
 
-    #zone_data.show(10)
+    zone_data = spark.read.csv(args.data_file, header=True).select(
+        *columns_of_interest).na.fill(-1)
+    zone_data.show(5)
+    exp = zone_data.rdd.map(assign_nearest_group)
+    # kzones_df = spark.create
+
+    # zone_data.show(10)
     deb_print("csv zone_data read")
-    output = zone_data.collect()
+    output = exp.collect()
     deb_print("lines collected")
     deb_print("output len: {}".format(len(output)))
-    # for w in output[]:
-    #     print(w)
+    for w in output[0:10]:
+        print(w)
 
     print("*"*50)
     deb_print("END PROGRAM")
