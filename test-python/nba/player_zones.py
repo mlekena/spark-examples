@@ -53,10 +53,12 @@ def main():
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
 
     # remove comma between quotes for string type csv fields making it hard to parse.
-    lines = spark.read.format("csv") \
-        .option("header", True).schema(schema) \
-        .load(args.data_file)\
-        .select(*columns_of_interest).rdd.map(lambda r: r[0])
+    # lines = spark.read.format("csv") \
+    #     .option("header", True).schema(schema) \
+    #     .load(args.data_file)\
+    #     .select(*columns_of_interest).rdd.map(lambda r: r[0])
+    lines = spark.csv(args.data_file, header=True,
+                      schema=schema).rdd.map(lambda row: row[0])
     output = lines.collect()
     for w in output[0: 10]:
         print(w)
