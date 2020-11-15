@@ -65,7 +65,8 @@ def main():
     #     .load(args.data_file)\
     #     .select(*columns_of_interest).rdd.map(lambda r: r[0])
     lines = spark.read.csv(args.data_file, header=True,
-                           schema=schema).rdd.map(lambda row: row[0])
+                           schema=schema)
+    lines.show(10)
     deb_print("csv lines read")
     output = lines.collect()
     deb_print("lines collected")
