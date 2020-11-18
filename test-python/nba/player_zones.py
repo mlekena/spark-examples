@@ -8,7 +8,7 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructType
-
+from pyspark.ml.linalg import Vectors
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -46,12 +46,15 @@ def main():
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
     deb_print("using data file {}".format(args.data_file))
 
-    zone_data = spark.read.csv(args.data_file, header=True).select(*columns_of_interest).na.fill(-1)
+    zone_data = spark.read.csv(args.data_file, header=True).select(
+        *columns_of_interest).na.fill(-1)
+    trainingData = zone_data.rdd.map(lambda x: (
+        Vectors.dense(x[0:-1]))).toDF(["features"])
 
     kmeanifier = KMeans().setK(4).setSeed(10)
-    model = kmeanifier.fit(zone_data)
+    model = kmeanifier.fit(trainingData)
 
-    predictions = model.transform(zone_data)
+    predictions = model.transform(trainingData)
 
     evaluator = ClusteringEvaluator()
 
