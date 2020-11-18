@@ -4,9 +4,12 @@ import sys
 import argparse
 from operator import add
 
-from pyspark.sql.functions import lit
+from pyspark.ml.clustering import KMeans
+from pyspark.ml.evaluation import ClusteringEvaluator
 from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructType
+
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
@@ -43,19 +46,29 @@ def main():
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
     deb_print("using data file {}".format(args.data_file))
 
-    zone_data = spark.read.csv(args.data_file, header=True).select(
-        *columns_of_interest).na.fill(15).withColumn("KGROUP", lit(-1))
-    zone_data.show(5)
-    exp = zone_data.rdd.map(assign_nearest_group)
+    zone_data = spark.read.csv(args.data_file, header=True).select(*columns_of_interest).na.fill(-1)
+
+    kmeanifier = KMeans().setK(4).setSeed(10)
+    model = kmeanifier.fit(zone_data)
+
+    predictions = model.transform(zone_data)
+
+    evaluator = ClusteringEvaluator()
+
+    silhouette = evaluator.evaluate(predictions)
+    # zone_data.show(5)
+    # exp = zone_data.rdd.map(assign_nearest_group)
     # kzones_df = spark.create
 
     # zone_data.show(10)
-    deb_print("csv zone_data read")
-    output = exp.collect()
-    deb_print("lines collected")
-    deb_print("output len: {}".format(len(output)))
-    for w in output[0:10]:
-        print(w)
+    print("Silhouette with squared euclidean distance = " + str(silhouette))
+
+    # deb_print("csv zone_data read")
+    # output = exp.collect()
+    # deb_print("lines collected")
+    # deb_print("output len: {}".format(len(output)))
+    # for w in output[0:10]:
+    #     print(w)
 
     print("*"*50)
     deb_print("END PROGRAM")
