@@ -1,11 +1,14 @@
+
 from __future__ import print_function
 
 import sys
 import argparse
 from operator import add
-
+from pyspark.sql import Row
+# $example on$
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
+# $example off$
 from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructType
 from pyspark.ml.linalg import Vectors
