@@ -78,6 +78,7 @@ def main():
 
     print("*"*50)
     deb_print("END PROGRAM")
+    spark.stop()
 
 
 if __name__ == "__main__":
