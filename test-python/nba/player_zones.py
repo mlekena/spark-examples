@@ -13,6 +13,9 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructType
 from pyspark.ml.linalg import Vectors
 from pyspark.ml.feature import VectorAssembler
+import pandas as pd
+from pyspark.sql.functions import pandas_udf
+
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -40,12 +43,26 @@ def assign_nearest_group(in_row):
     return in_row[0]
 
 
+def find_k_clusters(panda_df, ncluster=4):
+    kmeanifier = KMeans().setK(ncluster).setSeed(10)
+    model = kmeanifier.fit(panda_df)
+    return pd.Dataframe(model.clusterCenters())
+
+
 def main():
     print("*"*50)
     print("*"*50)
     print("*"*50)
+
     columns_of_interest = ['player_name',
                            'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
+
+    # used in find_k_clusters to defined returned dataframe column schema
+    columns_schema_ddl = ','.join(["{} {}".format(col, typ)
+                                   for col, typ in zip(columns_of_interest,
+                                                       ['string', 'double', 'double', 'double'])
+                                   ])
+
     args = parser.parse_args()
     spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
     deb_print("using data file {}".format(args.data_file))
@@ -60,20 +77,22 @@ def main():
     #  zone_data.rdd.map(lambda x: (
     #     Vectors.dense(x[0:-1]))).toDF(["features"])
 
-    kmeanifier = KMeans().setK(4).setSeed(10)
-    model = kmeanifier.fit(trainingData)
+    trainingData.groupby("player_name").applyInPandas(
+        find_k_clusters, schema=columns_schema_ddl).show()
+    # kmeanifier = KMeans().setK(4).setSeed(10)
+    # model = kmeanifier.fit(trainingData)
 
-    predictions = model.transform(trainingData)
+    # predictions = model.transform(trainingData)
 
-    evaluator = ClusteringEvaluator()
+    # evaluator = ClusteringEvaluator()
 
-    silhouette = evaluator.evaluate(predictions)
+    # silhouette = evaluator.evaluate(predictions)
     # zone_data.show(5)
     # exp = zone_data.rdd.map(assign_nearest_group)
     # kzones_df = spark.create
 
     # zone_data.show(10)
-    print("Silhouette with squared euclidean distance = " + str(silhouette))
+    # print("Silhouette with squared euclidean distance = " + str(silhouette))
 
     # deb_print("csv zone_data read")
     # output = exp.collect()
