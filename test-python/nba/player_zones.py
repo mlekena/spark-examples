@@ -1,4 +1,8 @@
 
+"""
+Extra Requirements:
+    pandas
+"""
 from __future__ import print_function
 
 import sys
@@ -45,7 +49,7 @@ def assign_nearest_group(in_row):
 
 def find_k_clusters(panda_df, ncluster=4):
     kmeanifier = KMeans().setK(ncluster).setSeed(10)
-    model = kmeanifier.fit(panda_df)
+    model = kmeanifier.fit(panda_df['features'])
     return pd.Dataframe(model.clusterCenters())
 
 
@@ -69,16 +73,24 @@ def main():
 
     zone_data = spark.read.csv(args.data_file, header=True).select(
         *columns_of_interest).na.fill(-1)
+    zone_data.withColumn('SHOT_DIST', zone_data['SHOT_DIST'].cast('double').drop('SHOT_DIST')) \
+        .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(
+            'double').drop('CLOSE_DEF_DIST')) \
+        .withColumn('SHOT_CLOCK', zone_data['SHOT_CLOCK'].cast(
+            'double').drop('SHOT_CLOCK'))
 
+    # Convert zone data into VectorRow data cells
+    # Exclude player_name as strings are supported
     assembler = VectorAssembler(
-        inputCols=columns_of_interest, outputCol='features')
+        inputCols=columns_of_interest[1:], outputCol='features')
 
     trainingData = assembler.transform(zone_data)
     #  zone_data.rdd.map(lambda x: (
     #     Vectors.dense(x[0:-1]))).toDF(["features"])
 
-    trainingData.groupby("player_name").applyInPandas(
-        find_k_clusters, schema=columns_schema_ddl).show()
+    trainingData.show()
+    # trainingData.groupby("player_name").applyInPandas(
+    #     find_k_clusters, schema=columns_schema_ddl).show()
     # kmeanifier = KMeans().setK(4).setSeed(10)
     # model = kmeanifier.fit(trainingData)
 
