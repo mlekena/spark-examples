@@ -17,9 +17,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructType
 from pyspark.ml.linalg import Vectors
 from pyspark.ml.feature import VectorAssembler
-import pandas as pd
 from pyspark.sql.functions import pandas_udf
-
+import pandas as pd
 
 reload(sys)
 sys.setdefaultencoding('utf8')
