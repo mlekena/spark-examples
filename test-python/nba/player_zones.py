@@ -71,13 +71,13 @@ def main():
     deb_print("using data file {}".format(args.data_file))
 
     zone_data = spark.read.csv(args.data_file, header=True).select(
-        *columns_of_interest).dropna()
+        *columns_of_interest).dropna()  # .fillna(2) # https://hackingandslacking.com/cleaning-pyspark-dataframes-1a3f5fdcedd1
     zone_data.show()
     print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
     converted_zone_data = zone_data.withColumn('SHOT_DIST', zone_data['SHOT_DIST'].cast(DoubleType())) \
         .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(DoubleType())) \
         .withColumn('SHOT_CLOCK', zone_data['SHOT_CLOCK'].cast(
-            DoubleType()))
+            DoubleType()))  # https://www.datasciencemadesimple.com/typecast-integer-to-string-and-string-to-integer-in-pyspark/
 # .drop('SHOT_DIST')) \
     #     .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(
     #         DoubleType()).drop('CLOSE_DEF_DIST')) \
@@ -96,8 +96,8 @@ def main():
     #     Vectors.dense(x[0:-1]))).toDF(["features"])
 
     trainingData.show()
-    # trainingData.groupby("player_name").applyInPandas(
-    #     find_k_clusters, schema=columns_schema_ddl).show()
+    trainingData.groupby("player_name").applyInPandas(
+        find_k_clusters, schema=columns_schema_ddl).show()
     # kmeanifier = KMeans().setK(4).setSeed(10)
     # model = kmeanifier.fit(trainingData)
 
