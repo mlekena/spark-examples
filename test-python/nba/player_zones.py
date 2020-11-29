@@ -71,12 +71,14 @@ def main():
     deb_print("using data file {}".format(args.data_file))
 
     zone_data = spark.read.csv(args.data_file, header=True).select(
-        *columns_of_interest).na.fill(-1)
-    zone_data.withColumn('SHOT_DIST', zone_data['SHOT_DIST'].cast(DoubleType())) \
+        *columns_of_interest).dropna()
+    zone_data.show()
+    print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+    converted_zone_data = zone_data.withColumn('SHOT_DIST', zone_data['SHOT_DIST'].cast(DoubleType())) \
         .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(DoubleType())) \
         .withColumn('SHOT_CLOCK', zone_data['SHOT_CLOCK'].cast(
             DoubleType()))
-    # .drop('SHOT_DIST')) \
+# .drop('SHOT_DIST')) \
     #     .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(
     #         DoubleType()).drop('CLOSE_DEF_DIST')) \
     #     .withColumn('SHOT_CLOCK', zone_data['SHOT_CLOCK'].cast(
@@ -87,7 +89,9 @@ def main():
     assembler = VectorAssembler(
         inputCols=columns_of_interest[1:], outputCol='features')
 
-    trainingData = assembler.transform(zone_data)
+    #trainingData = assembler.transform(zone_data)
+
+    trainingData = assembler.transform(converted_zone_data)
     #  zone_data.rdd.map(lambda x: (
     #     Vectors.dense(x[0:-1]))).toDF(["features"])
 
