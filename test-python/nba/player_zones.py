@@ -14,7 +14,7 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 # $example off$
 from pyspark.sql import SparkSession
-from pyspark.sql.types import IntegerType, StringType, StructType
+from pyspark.sql.types import IntegerType, StringType, StructType, DoubleType
 from pyspark.ml.linalg import Vectors
 from pyspark.ml.feature import VectorAssembler
 from pyspark.sql.functions import pandas_udf
@@ -63,7 +63,7 @@ def main():
     # used in find_k_clusters to defined returned dataframe column schema
     columns_schema_ddl = ','.join(["{} {}".format(col, typ)
                                    for col, typ in zip(columns_of_interest,
-                                                       ['string', 'double', 'double', 'double'])
+                                                       [StringType(), DoubleType(), DoubleType(), DoubleType()])
                                    ])
 
     args = parser.parse_args()
@@ -72,11 +72,15 @@ def main():
 
     zone_data = spark.read.csv(args.data_file, header=True).select(
         *columns_of_interest).na.fill(-1)
-    zone_data.withColumn('SHOT_DIST', zone_data['SHOT_DIST'].cast('double').drop('SHOT_DIST')) \
-        .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(
-            'double').drop('CLOSE_DEF_DIST')) \
+    zone_data.withColumn('SHOT_DIST', zone_data['SHOT_DIST'].cast(DoubleType())) \
+        .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(DoubleType())) \
         .withColumn('SHOT_CLOCK', zone_data['SHOT_CLOCK'].cast(
-            'double').drop('SHOT_CLOCK'))
+            DoubleType()))
+    # .drop('SHOT_DIST')) \
+    #     .withColumn('CLOSE_DEF_DIST', zone_data['CLOSE_DEF_DIST'].cast(
+    #         DoubleType()).drop('CLOSE_DEF_DIST')) \
+    #     .withColumn('SHOT_CLOCK', zone_data['SHOT_CLOCK'].cast(
+    #         DoubleType()).drop('SHOT_CLOCK'))
 
     # Convert zone data into VectorRow data cells
     # Exclude player_name as strings are supported
@@ -110,7 +114,7 @@ def main():
     # deb_print("lines collected")
     # deb_print("output len: {}".format(len(output)))
     # for w in output[0:10]:
-    #     print(w)
+    #     print(w) pip install --upgrade pip
 
     print("*"*50)
     deb_print("END PROGRAM")
