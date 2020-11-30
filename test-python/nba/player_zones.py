@@ -101,7 +101,6 @@ def main():
         trainingData.select('features').dtypes))
     print(">>>>>>>>>>>>>>>>>>> {}".format(type(trainingData)))
     # trainingData.select("player_name").unique().show()
-    find_clusters_udf = udf(find_k_clusters, ArrayType(VectorUDT()))
     # trainingData.groupby("player_name").agg(collect_list("features").alias("features")).show()
     player_zone_schema = ArrayType(StructType(
         [StructField("SHOT_DIST", DoubleType(), False),
@@ -109,15 +108,17 @@ def main():
          StructField("SHOT_CLOCK", DoubleType(), False)
          ]))
 
-    def find_k_clusters(zone_list):  # (panda_df, ncluster=4):
+    def __find_k_clusters(zone_list):  # (panda_df, ncluster=4):
         spark.createDataFrame(pd.Dataframe(zone_list)).show()
         # kmeanifier = KMeans().setK(ncluster).setSeed(10)
         # model = kmeanifier.fit(panda_df['features'])
         # return pd.Dataframe(model.clusterCenters())
         return [1.0, 2.0, 3.0]  # model.clusterCenters()
+    # ArrayType(VectorUDT()))
+    find_clusters_udf = udf(__find_k_clusters, player_zone_schema)
 
     trainingData.groupby("player_name").agg(
-        collect_list("features").alias("features")).withColumn("features", find_k_clusters("features")).show()
+        collect_list("features").alias("features")).withColumn("features", find_clusters_udf("features")).show()
     # trainingData.groupby("player_name").applyInPandas(
     #   find_k_clusters, schema="string player_name, vector zones").show()#columns_schema_ddl).show()
     # kmeanifier = KMeans().setK(4).setSeed(10)
