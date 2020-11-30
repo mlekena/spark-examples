@@ -14,10 +14,10 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 # $example off$
 from pyspark.sql import SparkSession
-from pyspark.sql.types import IntegerType, StringType, StructType, DoubleType
-from pyspark.ml.linalg import Vectors
+from pyspark.sql.types import IntegerType, StringType, StructType, DoubleType, ArrayType
+from pyspark.ml.linalg import Vectors, VectorUDT
 from pyspark.ml.feature import VectorAssembler
-from pyspark.sql.functions import pandas_udf
+from pyspark.sql.functions import pandas_udf, udf, collect_list
 import pandas as pd
 
 reload(sys)
@@ -46,17 +46,18 @@ def assign_nearest_group(in_row):
     return in_row[0]
 
 
-def find_k_clusters(panda_df, ncluster=4):
+def find_k_clusters(zone_list):#(panda_df, ncluster=4):
+    
     kmeanifier = KMeans().setK(ncluster).setSeed(10)
     model = kmeanifier.fit(panda_df['features'])
-    return pd.Dataframe(model.clusterCenters())
-
+    #return pd.Dataframe(model.clusterCenters())
+    return model.clusterCenters()
 
 def main():
     print("*"*50)
     print("*"*50)
     print("*"*50)
-
+    spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
     columns_of_interest = ['player_name',
                            'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
 
@@ -67,7 +68,6 @@ def main():
                                    ])
 
     args = parser.parse_args()
-    spark = SparkSession.builder.appName("MostComfortableZones").getOrCreate()
     deb_print("using data file {}".format(args.data_file))
 
     zone_data = spark.read.csv(args.data_file, header=True).select(
@@ -96,8 +96,15 @@ def main():
     #     Vectors.dense(x[0:-1]))).toDF(["features"])
 
     trainingData.show()
-    trainingData.groupby("player_name").applyInPandas(
-        find_k_clusters, schema=columns_schema_ddl).show()
+    print(">>>>>>>>>>>>>>>>>>> {}".format(trainingData.select('features').dtypes))
+    print(">>>>>>>>>>>>>>>>>>> {}".format(type(trainingData)))
+    #trainingData.select("player_name").unique().show()
+    find_clusters_udf = udf(find_k_clusters, ArrayType(VectorUDT()))
+    #trainingData.groupby("player_name").agg(collect_list("features").alias("features")).show()
+    player_zone_schema = None
+    trainingData.groupby("player_name").agg(find_clusters_udf("features").alias("features")).show()
+    #trainingData.groupby("player_name").applyInPandas(
+     #   find_k_clusters, schema="string player_name, vector zones").show()#columns_schema_ddl).show()
     # kmeanifier = KMeans().setK(4).setSeed(10)
     # model = kmeanifier.fit(trainingData)
 
