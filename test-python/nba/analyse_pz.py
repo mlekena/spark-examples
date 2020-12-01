@@ -75,10 +75,11 @@ def main():
         predictions = model.transform(players_features)
         silhouette = evaluator.evaluate(predictions)
 
-        result.append([pname[0], model.clusterCenters(), silhouette])
+        result.append([pname[0], "[{}]".format(model.clusterCenters()), silhouette])
 
     print("player_name | zones | silouette")
-    print("\n".join(result))
+    for row in result:
+        print("{}\t{}\t{}".format(*row))
 
     print("*"*50)
     deb_print("END PROGRAM")
