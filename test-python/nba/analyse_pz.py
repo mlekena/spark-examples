@@ -14,10 +14,9 @@ from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
 # $example off$
 from pyspark.sql import SparkSession
-from pyspark.sql.types import IntegerType, StringType, StructType, DoubleType, ArrayType, StructField
+from pyspark.sql.types import *
 from pyspark.ml.linalg import Vectors, VectorUDT
 from pyspark.ml.feature import VectorAssembler
-from pyspark.sql.functions import pandas_udf, udf, collect_list, col
 import pandas as pd
 
 reload(sys)
@@ -28,15 +27,6 @@ parser.add_argument(
     "--data_file", help="Data file to read in must be specified using --data_file")
 parser.add_argument(
     "--data_output", help="Data output path must be specified using --data_output", action="store_const", const=None)
-
-#  SHOT_DIST, CLOSEST_DEF_DIST, SHOT_CLOCK
-init_k_zones = [
-    [8, 12, 20],
-    [15, 9, 15],
-    [22, 6, 10],
-    [30, 3, 5]
-]
-
 
 def deb_print(outstr):
     print("{}{}{}".format("#"*20, outstr, "#"*20))
@@ -50,11 +40,6 @@ def main():
     columns_of_interest = ['player_name',
                            'SHOT_DIST', 'CLOSE_DEF_DIST', 'SHOT_CLOCK']
 
-    # used in find_k_clusters to defined returned dataframe column schema
-    columns_schema_ddl = ','.join(["{} {}".format(col, typ)
-                                   for col, typ in zip(columns_of_interest,
-                                                       [StringType(), DoubleType(), DoubleType(), DoubleType()])
-                                   ])
 
     args = parser.parse_args()
     deb_print("using data file {}".format(args.data_file))
@@ -79,31 +64,21 @@ def main():
 
     all_player_names = trainingData.select("player_name").distinct().collect()
     result = list()
+    evaluator = ClusteringEvaluator()
+
     for pname in all_player_names:
         players_features = trainingData.where(
-           trainingData["player_name"] == pname[0]).select("features")
+            trainingData["player_name"] == pname[0]).select("features")
         kmeanifier = KMeans().setK(4).setSeed(10)
         model = kmeanifier.fit(players_features)
 
-        # predictions = model.transform(players_features)
+        predictions = model.transform(players_features)
+        silhouette = evaluator.evaluate(predictions)
 
-        result.append(model.clusterCenters())
+        result.append([pname[0], model.clusterCenters(), silhouette])
 
-    print(result)
-    # silhouette = evaluator.evaluate(predictions)
-    # zone_data.show(5)
-    # exp = zone_data.rdd.map(assign_nearest_group)
-    # kzones_df = spark.create
-
-    # zone_data.show(10)
-    # print("Silhouette with squared euclidean distance = " + str(silhouette))
-
-    # deb_print("csv zone_data read")
-    # output = exp.collect()
-    # deb_print("lines collected")
-    # deb_print("output len: {}".format(len(output)))
-    # for w in output[0:10]:
-    #     print(w) pip install --upgrade pip
+    print("player_name | zones | silouette")
+    print("\n".join(result))
 
     print("*"*50)
     deb_print("END PROGRAM")
