@@ -1,4 +1,4 @@
-
+#!/usr/bin/python3
 """
 Extra Requirements:
     pandas
@@ -109,7 +109,7 @@ def main():
          ]))
 
     def __find_k_clusters(zone_list):  # (panda_df, ncluster=4):
-        spark.createDataFrame(pd.Dataframe(zone_list)).show()
+    #    spark.createDataFrame(pd.Dataframe(zone_list)).show()
         # kmeanifier = KMeans().setK(ncluster).setSeed(10)
         # model = kmeanifier.fit(panda_df['features'])
         # return pd.Dataframe(model.clusterCenters())
