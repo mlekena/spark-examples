@@ -17,7 +17,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import IntegerType, StringType, StructType, DoubleType, ArrayType, StructField
 from pyspark.ml.linalg import Vectors, VectorUDT
 from pyspark.ml.feature import VectorAssembler
-from pyspark.sql.functions import pandas_udf, udf, collect_list
+from pyspark.sql.functions import pandas_udf, udf, collect_list, col
 import pandas as pd
 
 reload(sys)
@@ -81,7 +81,7 @@ def main():
     result = list()
     for pname in all_player_names:
         players_features = trainingData.where(
-            col("player_name") == pname).select("features")
+           trainingData["player_name"] == pname[0]).select("features")
         kmeanifier = KMeans().setK(4).setSeed(10)
         model = kmeanifier.fit(players_features)
 
