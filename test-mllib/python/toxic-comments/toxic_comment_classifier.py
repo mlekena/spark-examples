@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--test_data_file", help="Data file to read in must be specified using --test_data_file")
 parser.add_argument(
-    "--train_data_file", help="Data output path must be specified using --train_data_file", action="store_const", const=None)
+    "--train_data_file", help="Data output path must be specified using --train_data_file")
 
 
 def to_spark_df(file_name):
