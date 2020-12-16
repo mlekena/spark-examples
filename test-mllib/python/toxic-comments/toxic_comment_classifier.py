@@ -40,11 +40,6 @@ if __name__ == "__main__":
     context = (SparkSession.builder
                .appName("Toxic Comment Classification")
                .enableHiveSupport()
-               .config("spark.executor.memory", "4G")
-               .config("spark.driver.memory", "18G")
-               .config("spark.executor.cores", "7")
-               .config("spark.python.worker.memory", "4G")
-               .config("spark.driver.maxResultSize", "0")
                .config("spark.sql.crossJoin.enabled", "true")
                .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
                .config("spark.default.parallelism", "2")
@@ -52,7 +47,7 @@ if __name__ == "__main__":
 
     context.sparkContext.setLogLevel("INFO")
     args = parser.parse_args()
-
+    context.catalog.clearCache()
     train_data = get_csv_data(args.train_data_file)
     # test_data = to_spark_df(args.test_data_file)
     train_data.show()
