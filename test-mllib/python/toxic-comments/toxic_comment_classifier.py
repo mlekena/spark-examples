@@ -25,6 +25,16 @@ def to_spark_df(file_name):
     return (df)
 
 
+def get_csv_data(hdfs_path):
+    """You need to use the context to get data using hdfs paths"""
+    assert(context), "calling to_spark_df without an instantiated sparksession context"
+    data = context.read \
+        .option("delimiter", ',') \
+        .option("header", "true")\
+        .csv(hdfs_path)
+    return data
+
+
 if __name__ == "__main__":
 
     context = (SparkSession.builder
@@ -43,6 +53,6 @@ if __name__ == "__main__":
     context.sparkContext.setLogLevel("INFO")
     args = parser.parse_args()
 
-    train_data = to_spark_df(args.train_data_file)
-    test_data = to_spark_df(args.test_data_file)
+    train_data = get_csv_data(args.train_data_file)
+    # test_data = to_spark_df(args.test_data_file)
     train_data.show()
