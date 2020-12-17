@@ -62,7 +62,7 @@ if __name__ == "__main__":
     print("\nCONVERT STR TO FLOATS\n")
     for cols in out_cols:
         train_data = train_data.withColumn(
-            cols, train_data.select(cols).cast(FloatType))
+            cols, train_data[cols].cast(FloatType()))
     train_data.show(5)
     # Basic sentence tokenizer
     print("\nTOKENIZE...\n")
