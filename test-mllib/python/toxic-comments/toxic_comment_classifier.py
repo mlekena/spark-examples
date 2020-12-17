@@ -31,6 +31,9 @@ def get_csv_data(hdfs_path):
     data = context.read \
         .option("delimiter", ',') \
         .option("header", "true")\
+        .option("multiLine", "true") \
+        .option("quote", '"') \
+        .option("escape",'"') \
         .csv(hdfs_path)
     return data
 
@@ -50,4 +53,4 @@ if __name__ == "__main__":
     context.catalog.clearCache()
     train_data = get_csv_data(args.train_data_file)
     # test_data = to_spark_df(args.test_data_file)
-    train_data.show()
+    train_data.select("id").show()
