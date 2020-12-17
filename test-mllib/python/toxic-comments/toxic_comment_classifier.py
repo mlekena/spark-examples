@@ -120,7 +120,10 @@ if __name__ == "__main__":
         test_res = test_res.withColumn(
             col, extract_prob('probability')).drop("probability")
         test_res.show(5)
-    test_res.coalesce(1).write.csv('./results/spark_lr.csv',
-                                   mode='overwrite', header=True)
+    # test_res.coalesce(1).write.csv('./results/spark_lr.csv',
+    #                               mode='overwrite', header=True)
+    with open("test_results", "w") as ofile:
+        for row in test_res.collect():
+           ofile.write(row)
 
-    # !cat results/spark_lr.csv/part*.csv > spark_lr.csv
+    # test_res.write.csv("est_test_data.csv", mode="overwrite", header=True)
