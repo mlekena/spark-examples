@@ -6,6 +6,7 @@ import pyspark.sql.functions as sparkFunc
 import pyspark.sql.types as T
 from pyspark.ml.feature import Tokenizer, HashingTF, IDF
 from pyspark.ml.classification import LogisticRegression
+from pyspark.sql.types import FloatType
 
 # Globally define to make available in functions. Instantiated in main
 context = None
@@ -58,7 +59,11 @@ if __name__ == "__main__":
     # Create a list of all other columns besides 'id' and 'comment_text'
     out_cols = [i for i in train_data.columns if i not in [
         "id", "comment_text"]]
-
+    print("\nCONVERT STR TO FLOATS\n")
+    for cols in out_cols:
+        train_data = train_data.withColumn(
+            cols, train_data.select(cols).cast(FloatType))
+    train_data.show(5)
     # Basic sentence tokenizer
     print("\nTOKENIZE...\n")
     tokenizer = Tokenizer(inputCol="comment_text", outputCol="words")
